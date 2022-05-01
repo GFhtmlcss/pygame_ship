@@ -253,6 +253,7 @@ class Ship(pygame.sprite.Sprite):
         self.speed = 5
 
         self.last = pygame.time.get_ticks()
+        self.last_green = pygame.time.get_ticks()
         self.cooldown = 500
         self.green_cooldown = self.cooldown / 4
 
@@ -268,19 +269,17 @@ class Ship(pygame.sprite.Sprite):
 
     def fire(self):
         if now - self.last >= self.cooldown:
-            self.last = now
-            bullet = Gun()
-            bullets.add(bullet)
+                self.last = now
+                bullet = Gun()
+                bullets.add(bullet)
+        if now_green - self.last_green >= self.green_cooldown:
+                bullet_green = GreenGun()
+                bullets_green.add(bullet_green)
+                self.last_green = now_green
 
-    def fire_green(self):
-        if now_green - self.last >= self.green_cooldown:
-            bullet_green = GreenGun()
-            bullets_green.add(bullet_green)
-            self.last = now_green
-
-            bullet_green_2 = GreenGun()
-            bullet_green_2.rect.x += 195
-            bullets_green.add(bullet_green_2)
+                bullet_green_2 = GreenGun()
+                bullet_green_2.rect.x += 195
+                bullets_green.add(bullet_green_2)
 
     def update(self):
         keys = pygame.key.get_pressed()
@@ -350,7 +349,7 @@ class Asteroid(pygame.sprite.Sprite):
     def spawn_asteroid(self):
         self.asteroid = Asteroid()
         self.rect.x = randint(0 + 150, window_width - 150)
-        self.rect.y = randint(150, 200)
+        self.rect.y = randint(50, 100)
         self.rect_x = self.rect.x
         self.rect_y = self.rect.y
 
@@ -416,9 +415,8 @@ while run:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 now = pygame.time.get_ticks()
-                ship.fire()
                 now_green = pygame.time.get_ticks()
-                ship.fire_green()
+                ship.fire()
 
     # корабль и астероиды
     asteroid_collide = pygame.sprite.spritecollide(ship, asteroids, False)
