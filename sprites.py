@@ -269,17 +269,27 @@ class Ship(pygame.sprite.Sprite):
 
     def fire(self):
         if now - self.last >= self.cooldown:
-                self.last = now
-                bullet = Gun()
-                bullets.add(bullet)
+            self.last = now
+            bullet = Gun()
+            bullets.add(bullet)
         if now_green - self.last_green >= self.green_cooldown:
-                bullet_green = GreenGun()
-                bullets_green.add(bullet_green)
-                self.last_green = now_green
+            bullet_green = GreenGun()
+            bullets_green.add(bullet_green)
+            self.last_green = now_green
 
-                bullet_green_2 = GreenGun()
-                bullet_green_2.rect.x += 195
-                bullets_green.add(bullet_green_2)
+            bullet_green_2 = GreenGun()
+            bullet_green_2.rect.x += 195
+            bullets_green.add(bullet_green_2)
+
+    # def fire_green(self):
+    #     if now_green - self.last >= self.green_cooldown:
+    #         bullet_green = GreenGun()
+    #         bullets_green.add(bullet_green)
+    #         self.last = now_green
+    #
+    #         bullet_green_2 = GreenGun()
+    #         bullet_green_2.rect.x += 195
+    #         bullets_green.add(bullet_green_2)
 
     def update(self):
         keys = pygame.key.get_pressed()
@@ -405,61 +415,87 @@ text_text = 'осторожно! астероиды рядом! Твой сче�
 text = font.render(text_text, True, [240, 160, 75])
 text_position = 15, 10
 
+
+def menu():
+    window.fill((30, 130, 145))
+    run = True
+    while run:
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    game()
+                    print('lol start')
+
+        pygame.display.update()
+
+def game():
+    global asteroid_check
+    global now
+    global now_green
+    global text
+    global event
+    global ship_check
+
+    run = True
+    while run:
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    now = pygame.time.get_ticks()
+                    now_green = pygame.time.get_ticks()
+                    ship.fire()
+
+        # корабль и астероиды
+        asteroid_collide = pygame.sprite.spritecollide(ship, asteroids, False)
+
+        for i in asteroid_collide:
+            text_text = 'О нет! Ты врезался! Корабль сломан! Твой счет до смерти: {}'.format(asteroid_check)
+            text = font.render(text_text, True, [240, 160, 75])
+            ship_check = False
+            ship.check()
+
+        # пули и астероиды
+        bullets_asteroids = pygame.sprite.groupcollide(bullets, asteroids, True, False)
+        for i in bullets_asteroids:
+            i.kill()
+            asteroid.killing()
+            asteroid_check += 1
+            text_text = 'осторожно! астероиды рядом! Твой счет: {}'.format(asteroid_check)
+            text = font.render(text_text, True, [240, 160, 75])
+        bullets_asteroids = pygame.sprite.groupcollide(bullets_green, asteroids, True, False)
+        for i in bullets_asteroids:
+            i.kill()
+            asteroid.killing()
+            asteroid_check += 1
+            text_text = 'осторожно! астероиды рядом! Твой счет: {}'.format(asteroid_check)
+            text = font.render(text_text, True, [240, 160, 75])
+
+            # обновление
+            ship.update()
+            bullets.update()
+            bullets_green.update()
+            asteroids.update()
+
+            # рисование всего
+            window.blit(background, (0, 0))
+
+            bullets.draw(window)
+            bullets_green.draw(window)
+
+            window.blit(ship.image, (ship.rect.x, ship.rect.y))
+            window.blit(text, text_position)
+
+            asteroids.draw(window)
+
+            clock.tick(FPS)
+            pygame.display.update()
+
+
 # цикл
-run = True
-while run:
-    events = pygame.event.get()
-    for event in events:
-        if event.type == pygame.QUIT:
-            run = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                now = pygame.time.get_ticks()
-                now_green = pygame.time.get_ticks()
-                ship.fire()
-
-    # корабль и астероиды
-    asteroid_collide = pygame.sprite.spritecollide(ship, asteroids, False)
-    for i in asteroid_collide:
-        text_text = 'О нет! Ты врезался! Корабль сломан! Твой счет до смерти: {}'.format(asteroid_check)
-        text = font.render(text_text, True, [240, 160, 75])
-        ship_check = False
-        ship.check()
-
-    # пули и астероиды
-    bullets_asteroids = pygame.sprite.groupcollide(bullets, asteroids, True, False)
-    for i in bullets_asteroids:
-        i.kill()
-        asteroid.killing()
-
-        asteroid_check += 1
-        text_text = 'осторожно! астероиды рядом! Твой счет: {}'.format(asteroid_check)
-        text = font.render(text_text, True, [240, 160, 75])
-    bullets_asteroids = pygame.sprite.groupcollide(bullets_green, asteroids, True, False)
-    for i in bullets_asteroids:
-        i.kill()
-        asteroid.killing()
-
-        asteroid_check += 1
-        text_text = 'осторожно! астероиды рядом! Твой счет: {}'.format(asteroid_check)
-        text = font.render(text_text, True, [240, 160, 75])
-
-    # обновление
-    ship.update()
-    bullets.update()
-    bullets_green.update()
-    asteroids.update()
-
-    # рисование всего
-    window.blit(background, (0, 0))
-
-    bullets.draw(window)
-    bullets_green.draw(window)
-
-    window.blit(ship.image, (ship.rect.x, ship.rect.y))
-    window.blit(text, text_position)
-
-    asteroids.draw(window)
-
-    pygame.display.update()
-    clock.tick(FPS)
+game()
